@@ -12,7 +12,7 @@ function token_kiss () {
       email || echo 'nobody@example.net')"
     export NPM_EMAIL NPM_TOKEN
     # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
-    exec npm "$@"
+    exec /usr/bin/npm "$@"
     return $?
   fi
 
