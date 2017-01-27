@@ -1,0 +1,40 @@
+#!/bin/bash
+# -*- coding: utf-8, tab-width: 2 -*-
+
+
+function token_kiss () {
+  # kiss = keep it simple, stupid. (or stable, if you prefer that.)
+
+  if [ "$1" != --guess-npm-cfgvar ]; then
+    [ -n "$NPM_TOKEN" ] || local NPM_TOKEN="$("$FUNCNAME" --guess-npm-cfgvar \
+      '//registry.npmjs.org/' || printf '%08d-%04d-%04d-%04d-%012d\n')"
+    [ -n "$NPM_EMAIL" ] || local NPM_EMAIL="$("$FUNCNAME" --guess-npm-cfgvar \
+      email || echo 'nobody@example.net')"
+    export NPM_EMAIL NPM_TOKEN
+    # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
+    exec npm "$@"
+    return $?
+  fi
+
+  local RC_FILES=(
+    "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
+    )
+  shift; local CFG_KEY="$1"
+  local KEY_RGX='[" ]'"${CFG_KEY//./\\.}"'":'
+  # echo "D: looking up config key '$CFG_KEY', regexp '$KEY_RGX'" >&2
+  grep -hPe "$KEY_RGX" -A 1 -- "${RC_FILES[@]}" 2>/dev/null | sed -nre '
+    /:\s*$/N;s~^.*'"$KEY_RGX"'\s*"([^"\n]+)".*$~\1~p;q
+    ' | grep . -m 1
+  return $?
+}
+
+
+
+
+
+
+
+
+
+
+token_kiss "$@"; exit $?

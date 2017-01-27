@@ -1,0 +1,34 @@
+{ "name": "npm-cli-wrapper-pmb",
+  "version": "0.0.1",
+  "description": "Custom interface to npm's CLI.",
+  "keywords": [],
+
+  "author": "M.K. (https://github.com/mk-pmb)",
+  "homepage": "https://github.com/mk-pmb/npm-cli-wrapper-pmb-node#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk-pmb/npm-cli-wrapper-pmb-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mk-pmb/npm-cli-wrapper-pmb-node/issues"
+  },
+
+  "private": false, "license": "ISC",
+
+  "main": "ncw.js",
+  "bin": {
+    "npm-cli-wrapper-kiss": "bin/token_kiss.sh"
+  },
+  "scripts": { "test": "nodejs test/all.js" },
+  "directories": { "test": "test" },
+
+  "dependencies": {
+    "deep-assign": "^2.0.0"
+  },
+  "devDependencies": {
+    "equal-pmb": "^0.1.0"
+  },
+
+
+  "npm vs. BOM = Unexpected token": "-*- coding: UTF-8 -*-"
+}
