@@ -5,6 +5,7 @@
 function token_kiss () {
   # kiss = keep it simple, stupid. (or stable, if you prefer that.)
 
+  local SELFPATH="$(readlink -m "$BASH_SOURCE"/..)"
   local RC_FILES=(
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
     )
@@ -17,9 +18,13 @@ function token_kiss () {
       return $?;;
   esac
 
+  local NPM_V4_CLI='npm/cli.js'
+  local NPM_V5_CLI='npm/bin/npm-cli.js'
+
   [ -n "$ORIG_NPM_BIN" ] || local ORIG_NPM_BIN="$(
     chkexec "$FUNCNAME" --guess-npm-cfgvar orig_npm_bin \
-      || chkexec nodejs -p 'require.resolve("npm/cli.js")' \
+      || require_resolve "$NPM_V5_CLI" \
+      || require_resolve "$NPM_V4_CLI" \
       || echo /usr/bin/npm)"
   [ -x "$ORIG_NPM_BIN" ] || return 4$(
     echo "E: not executable: $ORIG_NPM_BIN" >&2)
@@ -39,6 +44,11 @@ function chkexec () {
   # echo "$FUNCNAME: <$GUESS>" >&2
   [ -x "$GUESS" ] || return 2
   echo "$GUESS"
+}
+
+
+function require_resolve () {
+  nodejs "$SELFPATH"/../require_resolve.js "$@"; return $?
 }
 
 
