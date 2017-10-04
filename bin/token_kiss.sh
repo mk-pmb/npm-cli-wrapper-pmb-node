@@ -18,13 +18,9 @@ function token_kiss () {
       return $?;;
   esac
 
-  local NPM_V4_CLI='npm/cli.js'
-  local NPM_V5_CLI='npm/bin/npm-cli.js'
-
   [ -n "$ORIG_NPM_BIN" ] || local ORIG_NPM_BIN="$(
     chkexec "$FUNCNAME" --guess-npm-cfgvar orig_npm_bin \
-      || require_resolve "$NPM_V5_CLI" \
-      || require_resolve "$NPM_V4_CLI" \
+      || require_resolve 'npm/bin/npm-cli.js' \
       || echo /usr/bin/npm)"
   [ -x "$ORIG_NPM_BIN" ] || return 4$(
     echo "E: not executable: $ORIG_NPM_BIN" >&2)
