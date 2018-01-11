@@ -20,6 +20,7 @@ function token_kiss () {
 
   [ -n "$REAL_NPM_BIN" ] || local REAL_NPM_BIN="$(
     chkexec guess_npm_cfgvar real_npm_bin \
+      || find_npm_by_npx \
       || require_resolve 'npm/bin/npm-cli.js' \
       || echo /usr/bin/npm)"
   [ -x "$REAL_NPM_BIN" ] || return 4$(
@@ -32,10 +33,11 @@ function token_kiss () {
   export NPM_EMAIL NPM_TOKEN
   # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
 
+  local HOOK=
   local NPM_CMD=( "$REAL_NPM_BIN" "$RUNMODE" )
   case "$RUNMODE" in
     [a-z]* )
-      local HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
+      HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
       [ "${HOOK:0:2}" == '~/' ] && HOOK="$HOME${HOOK:1}"
       [ -n "$HOOK" ] && NPM_CMD=( "$HOOK" )
       ;;
@@ -70,7 +72,20 @@ function chkexec () {
 
 
 function require_resolve () {
-  nodejs "$SELFPATH"/../require_resolve.js "$@"; return $?
+  nodejs "$SELFPATH"/../require_resolve.js "$@" 2>/dev/null; return $?
+}
+
+
+function find_npm_by_npx () {
+  local NPX_CLI="$(require_resolve 'npm/bin/npx-cli.js')"
+  local NPM_CLI=
+  case "$NPX_CLI" in
+    */npx-cli.js )
+      NPM_CLI="${NPX_CLI%x*}m${NPX_CLI##*x}"
+      [ -f "$NPM_CLI" ] || return 2
+      echo "$NPM_CLI";;
+    * ) return 2;;
+  esac
 }
 
 
