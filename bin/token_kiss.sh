@@ -5,32 +5,58 @@
 function token_kiss () {
   # kiss = keep it simple, stupid. (or stable, if you prefer that.)
 
-  local SELFPATH="$(readlink -m "$BASH_SOURCE"/..)"
+  export LANG{,UAGE}=en_US.UTF-8  # make error messages search engine-friendly
+  local SELFFILE="$(readlink -m -- "$BASH_SOURCE")"
+  local SELFPATH="$(dirname -- "$SELFFILE")"
+  local SELFNAME="$(basename -- "$SELFFILE" .sh)"
+  local INVOKED_AS="$(basename -- "$0" .sh)"
+
   local RC_FILES=(
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
     )
 
   local RUNMODE="$1"; shift
-  case "$RUNMODE" in
-    --guess-npm-cfgvar )
-      RUNMODE="${RUNMODE#--}"
-      "${RUNMODE//-/_}" "$@"
-      return $?;;
-  esac
+  unabbreviate_runmode || return $?
 
-  [ -n "$ORIG_NPM_BIN" ] || local ORIG_NPM_BIN="$(
-    chkexec "$FUNCNAME" --guess-npm-cfgvar orig_npm_bin \
+  [ -n "$REAL_NPM_BIN" ] || local REAL_NPM_BIN="$(
+    chkexec guess_npm_cfgvar real_npm_bin \
       || require_resolve 'npm/bin/npm-cli.js' \
       || echo /usr/bin/npm)"
-  [ -x "$ORIG_NPM_BIN" ] || return 4$(
-    echo "E: not executable: $ORIG_NPM_BIN" >&2)
-  [ -n "$NPM_TOKEN" ] || local NPM_TOKEN="$("$FUNCNAME" --guess-npm-cfgvar \
-    '//registry.npmjs.org/' || printf '%08d-%04d-%04d-%04d-%012d\n')"
-  [ -n "$NPM_EMAIL" ] || local NPM_EMAIL="$("$FUNCNAME" --guess-npm-cfgvar \
-    email || echo 'nobody@example.net')"
+  [ -x "$REAL_NPM_BIN" ] || return 4$(
+    echo "E: not executable: $REAL_NPM_BIN" >&2)
+  [ -n "$NPM_TOKEN" ] || local NPM_TOKEN="$(
+    guess_npm_cfgvar '//registry.npmjs.org/' \
+      || printf '%08d-%04d-%04d-%04d-%012d\n')"
+  [ -n "$NPM_EMAIL" ] || local NPM_EMAIL="$(
+    guess_npm_cfgvar email || echo 'nobody@example.net')"
   export NPM_EMAIL NPM_TOKEN
   # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
-  exec "$ORIG_NPM_BIN" "$RUNMODE" "$@"
+
+  local NPM_CMD=( "$REAL_NPM_BIN" "$RUNMODE" )
+  case "$RUNMODE" in
+    [a-z]* )
+      local HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
+      [ "${HOOK:0:2}" == '~/' ] && HOOK="$HOME${HOOK:1}"
+      [ -n "$HOOK" ] && NPM_CMD=( "$HOOK" )
+      ;;
+    ::* )
+      RUNMODE="${RUNMODE#::}"
+      "$RUNMODE" "$@"
+      return $?;;
+    --real-npm-bin )
+      if [ "$#" == 0 ]; then
+        echo "$REAL_NPM_BIN"
+        return 0
+      else
+        NPM_CMD=( "$REAL_NPM_BIN" "$1" )
+        shift
+      fi;;
+    * )
+      echo "E: runmode expected as first argument for $0 = $SELFFILE" >&2
+      return 3;;
+  esac
+
+  exec "${NPM_CMD[@]}" "$@"
   return $?
 }
 
@@ -57,6 +83,29 @@ function guess_npm_cfgvar () {
     ' | grep . -m 1
   return $?
 }
+
+
+function unabbreviate_runmode () {
+  local CMDS=(
+    install
+    login
+    logout
+    publish
+    run
+    test
+    unpublish
+    )
+  local MAYBES=()
+  local ITEM=
+  for ITEM in "${CMDS[@]}"; do
+    [[ "$ITEM" == "$RUNMODE"* ]] && MAYBES+=( "$ITEM" )
+  done
+  [ "${#MAYBES[@]}" == 0 ] && return 0
+  [ "${#MAYBES[@]}" -le 1 ] || return 4$(
+    echo "E: runmode '$RUNMODE' is ambiguous: could be ${MAYBES[*]}" >&2)
+  RUNMODE="${MAYBES[0]}"
+}
+
 
 
 
