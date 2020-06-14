@@ -36,6 +36,7 @@ function token_kiss () {
   local HOOK=
   local NPM_CMD=( "$REAL_NPM_BIN" "$RUNMODE" )
   case "$RUNMODE" in
+    --version ) ;;
     [a-z]* )
       HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
       [ "${HOOK:0:2}" == '~/' ] && HOOK="$HOME${HOOK:1}"
