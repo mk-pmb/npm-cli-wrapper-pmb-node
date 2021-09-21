@@ -73,7 +73,7 @@ function chkexec () {
 
 
 function require_resolve () {
-  nodejs "$SELFPATH"/../require_resolve.js "$@" 2>/dev/null; return $?
+  nodejs "$SELFPATH"/../require_resolve.js -- -- "$@" 2>/dev/null; return $?
 }
 
 

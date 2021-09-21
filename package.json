@@ -1,5 +1,5 @@
 { "name": "npm-cli-wrapper-pmb",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Custom interface to npm's CLI.",
   "keywords": [],
 
@@ -23,10 +23,9 @@
   "directories": { "test": "test" },
 
   "dependencies": {
-    "deep-assign": "^2.0.0"
+    "robust-require-resolve-pmb": "^0.1.2"
   },
   "devDependencies": {
-    "equal-pmb": "^0.1.0"
   },
 
 

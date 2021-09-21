@@ -2,4 +2,4 @@
 /* -*- tab-width: 2 -*- */
 'use strict';
 // purpose: Help the kiss CLI resolve packages relative to this one.
-console.log(process.argv.slice(2).map(require.resolve).join('\n'));
+require('robust-require-resolve-pmb/cli.js')(require);
