@@ -10,6 +10,9 @@ function token_kiss () {
   local SELFPATH="$(dirname -- "$SELFFILE")"
   local SELFNAME="$(basename -- "$SELFFILE" .sh)"
   local INVOKED_AS="$(basename -- "$0" .sh)"
+  local DBGLV="${DEBUGLEVEL:-0}"
+  [ "$DBGLV" -ge 8 ] && echo "D: $FUNCNAME invocation:$(
+    printf ' ‹%s›' "$0" "$@")" >&2
 
   local RC_FILES=(
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
@@ -17,6 +20,10 @@ function token_kiss () {
 
   local RUNMODE="$1"; shift
   unabbreviate_runmode || return $?
+  local RUNFLAGS="${RUNMODE}+"
+  RUNMODE="${RUNFLAGS%%\+*}"
+  RUNFLAGS="${RUNFLAGS#*\+}"
+  RUNFLAGS="+${RUNFLAGS//\+/++}+"
 
   [ -n "$REAL_NPM_BIN" ] || local REAL_NPM_BIN="$(
     chkexec guess_npm_cfgvar real_npm_bin \
@@ -25,9 +32,9 @@ function token_kiss () {
       || echo /usr/bin/npm)"
   [ -x "$REAL_NPM_BIN" ] || return 4$(
     echo "E: not executable: $REAL_NPM_BIN" >&2)
-  [ -n "$NPM_TOKEN" ] || local NPM_TOKEN="$(
-    guess_npm_cfgvar '//registry.npmjs.org/' \
-      || printf '%08d-%04d-%04d-%04d-%012d\n')"
+  local NPM_TOKEN=
+  decide_token "$NPM_TOKEN" || return $?$(echo "E: Token selection failed" >&2)
+  # local -p; return 4
   [ -n "$NPM_EMAIL" ] || local NPM_EMAIL="$(
     guess_npm_cfgvar email || echo 'nobody@example.net')"
   export NPM_EMAIL NPM_TOKEN
@@ -55,7 +62,8 @@ function token_kiss () {
         shift
       fi;;
     * )
-      echo "E: runmode expected as first argument for $0 = $SELFFILE" >&2
+      echo "E: expected runmode as first argument for $0 = $SELFFILE" \
+        "but got '$RUNMODE'" >&2
       return 3;;
   esac
 
@@ -102,24 +110,69 @@ function guess_npm_cfgvar () {
 
 
 function unabbreviate_runmode () {
-  local CMDS=(
+  local KNOWN_TASKS=(
     install
     login
-    logout
-    publish
+    logout+token
+    publish+token
     run
     test
-    unpublish
+    unpublish+token
+    whoami
     )
   local MAYBES=()
   local ITEM=
-  for ITEM in "${CMDS[@]}"; do
-    [[ "$ITEM" == "$RUNMODE"* ]] && MAYBES+=( "$ITEM" )
+  for ITEM in "${KNOWN_TASKS[@]}"; do
+    [[ "${ITEM%%\+*}" == "$RUNMODE"* ]] && MAYBES+=( "$ITEM" )
   done
   [ "${#MAYBES[@]}" == 0 ] && return 0
   [ "${#MAYBES[@]}" -le 1 ] || return 4$(
     echo "E: runmode '$RUNMODE' is ambiguous: could be ${MAYBES[*]}" >&2)
   RUNMODE="${MAYBES[0]}"
+}
+
+
+function decide_token () {
+  local ORIG_ENV_TOKEN="$1"
+  local TOK="$ORIG_ENV_TOKEN"
+  if [[ "$RUNFLAGS" == *+token+* ]]; then
+    [ -n "$TOK" ] || TOK="$(guess_npm_cfgvar '//registry.npmjs.org/')"
+  fi
+  TOK="${TOK// /}"
+  [ -n "$TOK" ] || TOK='npm_'SecretSecretSecretSecretSecret'Chksum'
+  maybe_input_token_holes || return $?
+  NPM_TOKEN="$TOK"
+}
+
+
+function maybe_input_token_holes () {
+  [ -n "$TOK" ] || return 0
+  TOK="${TOK//,/?}"
+  [[ "$TOK" == *'?'* ]] || return 0   # no holes
+
+  # Last 6 chars are checksum:
+  # https://github.blog/2021-09-23-announcing-npms-new-access-token-format/
+  # Details: https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/
+  local SECRET="${TOK%??????}"
+  local CKSUM="${TOK:${#SECRET}}"
+  # echo "D: token secret: '$SECRET' checksum: '$CKSUM'" >&2
+
+  local N_HOLES="${TOK//[^?]/}"
+  N_HOLES="${#N_HOLES}"
+
+  [[ "$SECRET" == *'?'* ]] || echo "W: Your token is lacking holes in the" \
+    "random secret part!" >&2
+  [[ "$CKSUM" == *'?'* ]] || echo "W: Your token is lacking holes in the" \
+    "checksum part!" >&2
+
+  echo -n "Your saved token for npm action $RUNMODE is holey." \
+    "Please type the $N_HOLES missing characters, then press [Enter]: "
+  local INPUT=
+  read -r INPUT || return 3$(echo "E: Failed to read token holes." >&2)
+  while [[ "$TOK" == *'?'* ]]; do
+    TOK="${TOK/\?/${INPUT:0:1}}"
+    INPUT="${INPUT:1}"
+  done
 }
 
 
