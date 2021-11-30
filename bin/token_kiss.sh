@@ -40,8 +40,15 @@ function token_kiss () {
   export NPM_EMAIL NPM_TOKEN
   # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
 
+
+  npm_cmd_with_hooks "$@"
+  return $?
+}
+
+
+function npm_cmd_with_hooks () {
   local HOOK=
-  local NPM_CMD=( "$REAL_NPM_BIN" "$RUNMODE" )
+  local NPM_CMD=( "$REAL_NPM_BIN" )
   case "$RUNMODE" in
     --version ) ;;
     [a-z]* )
@@ -58,7 +65,7 @@ function token_kiss () {
         echo "$REAL_NPM_BIN"
         return 0
       else
-        NPM_CMD=( "$REAL_NPM_BIN" "$1" )
+        RUNMODE="$1"
         shift
       fi;;
     * )
@@ -67,7 +74,12 @@ function token_kiss () {
       return 3;;
   esac
 
-  exec "${NPM_CMD[@]}" "$@"
+  NPM_CMD+=(
+    "$RUNMODE"
+    "${NPM_ARGS[@]}"
+    "$@"
+    )
+  "${NPM_CMD[@]}"
   return $?
 }
 
