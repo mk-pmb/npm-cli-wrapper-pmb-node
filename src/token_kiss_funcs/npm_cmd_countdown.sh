@@ -25,4 +25,10 @@ function npm_cmd_countdown () {
 }
 
 
+function npm_cmd_countdown_then_run () {
+  npm_cmd_countdown "$@" || return $?
+  "$@" || return $?
+}
+
+
 return 0
