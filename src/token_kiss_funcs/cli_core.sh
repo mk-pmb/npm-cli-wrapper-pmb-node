@@ -11,7 +11,18 @@ function token_kiss_cli_core () {
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
     )
 
-  local RUNMODE="$1"; shift
+  local ARG="$1"; shift
+  if [ "$ARG" == --bash-source-plugins ]; then
+    while true; do
+      ARG="$1"; shift
+      case "$ARG" in
+        *.* | */* ) source -- "$ARG" --lib || return $?;;
+        * ) break;;
+      esac
+    done
+  fi
+
+  local RUNMODE="$ARG"
   unabbreviate_runmode || return $?
   local RUNFLAGS="${RUNMODE}+"
   RUNMODE="${RUNFLAGS%%\+*}"
@@ -29,7 +40,6 @@ function token_kiss_cli_core () {
     guess_npm_cfgvar email || echo 'nobody@example.net')"
   export NPM_EMAIL NPM_TOKEN
   # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
-
 
   npm_cmd_with_hooks "$@"
   return $?
