@@ -49,19 +49,40 @@ function token_kiss_cli_core () {
     guess_npm_cfgvar email || echo 'nobody@example.net')"
   decide_token || return $?$(echo "E: Token selection failed" >&2)
 
-  if [[ "$RUNFLAGS" == *+'dump_npm_env_updates'+* ]]; then
-    local -p | grep -Pe '^NPM_VARS='
-    return 0
-  fi
-
-  local KEY=
-  for KEY in "${!NPM_VARS[@]}"; do
-    export "NPM_${KEY^^}=${NPM_VARS[$KEY]}"
-  done
+  case "$RUNFLAGS" in
+    *+'inject_npm_env_updates'+* )
+      local -p | grep -Pe '^NPM_VARS=' || return $?
+      inject_npm_env_updates
+      return $?;;
+    *+'dump_npm_env_updates'+* )
+      local -p | grep -Pe '^NPM_VARS='
+      return $?;;
+  esac
+  export_npm_vars || return $?
   # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
 
   npm_cmd_with_hooks "$@"
   return $?
+}
+
+
+function export_npm_vars () {
+  # to reuse in external scripts: npm --func declare -f export_npm_vars
+  local KEY=
+  for KEY in "${!NPM_VARS[@]}"; do
+    export "NPM_${KEY^^}=${NPM_VARS[$KEY]}"
+  done
+}
+
+
+function inject_npm_env_updates () {
+  local PFX='tmp__inject_npm_env_updates__'
+  local FN='export_npm_vars'
+  echo -n "function $PFX"
+  declare -f "$FN"
+  FN="$PFX$FN"
+  echo "$FN || return $?"
+  echo "unset $FN"
 }
 
 
