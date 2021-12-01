@@ -11,30 +11,36 @@ function token_kiss_cli_core () {
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
     )
 
-  local ARG="$1"; shift
-  if [ "$ARG" == --bash-source-plugins ]; then
-    while true; do
-      ARG="$1"; shift
-      case "$ARG" in
-        *.* | */* ) source -- "$ARG" --lib || return $?;;
-        * ) break;;
-      esac
+  if [ "$1" == --bash-source-plugins ]; then
+    shift
+    while [[ "$1" == *[./]* ]]; do
+      source -- "$1" --lib || return $?
+      shift
     done
   fi
-
-  local RUNMODE="$ARG"
-  unabbreviate_runmode || return $?
-  local RUNFLAGS="${RUNMODE}+"
-  RUNMODE="${RUNFLAGS%%\+*}"
-  RUNFLAGS="${RUNFLAGS#*\+}"
-  RUNFLAGS="+${RUNFLAGS//\+/++}+"
 
   [ -n "$REAL_NPM_BIN" ] || local REAL_NPM_BIN="$(guess_real_npm_bin)"
   [ -x "$REAL_NPM_BIN" ] || return 4$(
     echo "E: not executable: $REAL_NPM_BIN" >&2)
 
+  case "$#:$1" in
+    1:--real-npm-bin )
+      echo "$REAL_NPM_BIN"
+      return 0;;
+  esac
+
+  local RUNFLAGS=
+  while [[ "$1" == +[a-z]* ]]; do RUNFLAGS+="$1"; shift; done
+  local RUNMODE="$1"; shift
+  unabbreviate_runmode || return $?
+  RUNFLAGS="${RUNMODE}${RUNFLAGS}+"
+  RUNMODE="${RUNFLAGS%%\+*}"
+  RUNFLAGS="${RUNFLAGS#*\+}"
+  RUNFLAGS="+${RUNFLAGS//\+/++}+"
+
+  local ORIG_ENV_TOKEN="$NPM_TOKEN"
   local NPM_TOKEN=
-  decide_token "$NPM_TOKEN" || return $?$(echo "E: Token selection failed" >&2)
+  decide_token || return $?$(echo "E: Token selection failed" >&2)
   # local -p; return 4
   [ -n "$NPM_EMAIL" ] || local NPM_EMAIL="$(
     guess_npm_cfgvar email || echo 'nobody@example.net')"

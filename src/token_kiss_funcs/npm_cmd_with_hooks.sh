@@ -4,30 +4,29 @@
 function npm_cmd_with_hooks () {
   local HOOK=
   local NPM_CMD=( "$REAL_NPM_BIN" )
+
   case "$RUNMODE" in
     --version ) ;;
+
     [a-z]* )
-      HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
-      [ "${HOOK:0:2}" == '~/' ] && HOOK="$HOME${HOOK:1}"
-      [ -n "$HOOK" ] && NPM_CMD=( "$HOOK" )
+      if [[ "$RUNFLAGS" != *+'unhooked'+* ]]; then
+        HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
+        [ "${HOOK:0:2}" == '~/' ] && HOOK="$HOME${HOOK:1}"
+        [ -n "$HOOK" ] && NPM_CMD=( "$HOOK" )
+      fi
       ;;
+
     --func )
       RUNMODE="$1"
       shift
       "$RUNMODE" "$@"
       return $?;;
-    --real-npm-bin )
-      if [ "$#" == 0 ]; then
-        echo "$REAL_NPM_BIN"
-        return 0
-      else
-        RUNMODE="$1"
-        shift
-      fi;;
+
     * )
       echo "E: expected runmode as first argument for $0 = $SELFFILE" \
         "but got '$RUNMODE'" >&2
       return 3;;
+
   esac
 
   NPM_CMD+=(
