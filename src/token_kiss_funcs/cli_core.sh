@@ -7,9 +7,8 @@ function token_kiss_cli_core () {
   [ "$DBGLV" -ge 8 ] && echo "D: $FUNCNAME invocation:$(
     printf ' ‹%s›' "$0" "$@")" >&2
 
-  local RC_FILES=(
-    "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
-    )
+  local UI_OUT_FD=1
+  tty --silent <&1 || UI_OUT_FD=2
 
   if [ "$1" == --bash-source-plugins ]; then
     shift
@@ -38,13 +37,27 @@ function token_kiss_cli_core () {
   RUNFLAGS="${RUNFLAGS#*\+}"
   RUNFLAGS="+${RUNFLAGS//\+/++}+"
 
-  local ORIG_ENV_TOKEN="$NPM_TOKEN"
-  local NPM_TOKEN=
-  decide_token || return $?$(echo "E: Token selection failed" >&2)
-  # local -p; return 4
-  [ -n "$NPM_EMAIL" ] || local NPM_EMAIL="$(
+  local RC_FILES=(
+    "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
+    )
+
+  local -A NPM_VARS=(
+    [token]="$NPM_TOKEN"
+    [email]="$NPM_EMAIL"
+    )
+  [ -n "$NPM_EMAIL" ] || NPM_VARS[email]="$(
     guess_npm_cfgvar email || echo 'nobody@example.net')"
-  export NPM_EMAIL NPM_TOKEN
+  decide_token || return $?$(echo "E: Token selection failed" >&2)
+
+  if [[ "$RUNFLAGS" == *+'dump_npm_env_updates'+* ]]; then
+    local -p | grep -Pe '^NPM_VARS='
+    return 0
+  fi
+
+  local KEY=
+  for KEY in "${!NPM_VARS[@]}"; do
+    export "NPM_${KEY^^}=${NPM_VARS[$KEY]}"
+  done
   # echo "D: $(env | grep -Pe '^NPM_' | tr '\n' ' ')." >&2
 
   npm_cmd_with_hooks "$@"

@@ -9,7 +9,7 @@ function maybe_countdown () {
   [ "$DURA_SEC" == 0 ] && return 0
   [ "$DURA_SEC" -ge 1 ] || return 4$(echo "E: invalid countdown duration" >&2)
   echo -n 'D:'
-  [ -z "$NPM_TOKEN" ] || echo -n ' (with npm token)'
+  [ -z "${NPM_VARS[token]}" ] || echo -n ' (with npm token)'
   printf ' ‹%s›' "$@"
   echo -n '? '
   local CTD="$DURA_SEC"

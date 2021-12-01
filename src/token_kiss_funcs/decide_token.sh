@@ -2,14 +2,14 @@
 
 
 function decide_token () {
-  local TOK="$ORIG_ENV_TOKEN"
+  local TOK="${NPM_VARS[token]}"
   if [[ "$RUNFLAGS" == *+token+* ]]; then
     [ -n "$TOK" ] || TOK="$(guess_npm_cfgvar '//registry.npmjs.org/')"
   fi
   TOK="${TOK// /}"
   [ -n "$TOK" ] || TOK='npm_'SecretSecretSecretSecretSecret'Chksum'
   maybe_input_token_holes || return $?
-  NPM_TOKEN="$TOK"
+  NPM_VARS[token]="$TOK"
 }
 
 

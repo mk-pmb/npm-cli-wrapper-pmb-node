@@ -22,7 +22,8 @@ function maybe_input_token_holes () {
     "checksum part!" >&2
 
   echo -n "Your saved token for npm action $RUNMODE is holey." \
-    "Please type the $N_HOLES missing characters, then press [Enter]: "
+    "Please type the $N_HOLES missing characters, then press [Enter]: " \
+    >&$UI_OUT_FD
   local INPUT=
   read -r INPUT || return 3$(echo "E: Failed to read token holes." >&2)
   while [[ "$TOK" == *'?'* ]]; do
