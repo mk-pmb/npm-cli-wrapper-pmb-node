@@ -9,7 +9,8 @@ function token_kiss () {
   local WRAPPER_BINDIR="$(dirname -- "$SELFFILE")"
   local SELFNAME="$(basename -- "$SELFFILE" .sh)"
   local INVOKED_AS="$(basename -- "$0" .sh)"
-  local ITEM="$(dirname -- "$WRAPPER_BINDIR")/src/${FUNCNAME}_funcs"
+  local WRAPPER_BASEDIR="$(dirname -- "$WRAPPER_BINDIR")"
+  local ITEM="$WRAPPER_BASEDIR/src/${FUNCNAME}_funcs"
   for ITEM in "$ITEM"/*.sh; do source -- "$ITEM" --lib || return $?; done
   token_kiss_cli_core "$@"
   return $?

@@ -18,8 +18,8 @@ function chkexec () {
 
 
 function require_resolve () {
-  nodejs "$WRAPPER_BINDIR"/src/require_resolve.js \
-    -- -- "$@" 2>/dev/null; return $?
+  nodejs "$WRAPPER_BASEDIR"/src/require_resolve.js -- -- "$@" 2>/dev/null
+  return $?
 }
 
 
