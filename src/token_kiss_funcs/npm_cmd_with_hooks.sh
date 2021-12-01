@@ -34,7 +34,7 @@ function npm_cmd_with_hooks () {
     "${NPM_ARGS[@]}"
     "$@"
     )
-  maybe_countdown 10 \
+  maybe_countdown \
     "${NPM_CMD[0]/#*\/node_modules\/npm\/*\//…/npm/}" \
     "${NPM_CMD[@]:1}" \
     || return $?
