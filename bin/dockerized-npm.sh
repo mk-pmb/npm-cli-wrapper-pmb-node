@@ -5,10 +5,10 @@
 function tmpdocker () {
   export LANG{,UAGE}=en_US.UTF-8  # make error messages search engine-friendly
   local SELFFILE="$(readlink -m -- "$BASH_SOURCE")"
-  local SELFPATH="$(dirname -- "$SELFFILE")"
+  local WRAPPER_BINDIR="$(dirname -- "$SELFFILE")"
   local SELFNAME="$(basename -- "$SELFFILE" .sh)"
   local INVOKED_AS="$(basename -- "$0" .sh)"
-  # cd -- "$SELFPATH" || return $?
+  # cd -- "$WRAPPER_BINDIR" || return $?
 
   local REPO_TOP="$(git rev-parse --show-toplevel)"
   [ -d "$REPO_TOP/.git" ] || return $?$(
