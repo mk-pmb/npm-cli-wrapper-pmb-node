@@ -17,7 +17,7 @@
 
   "main": "ncw.js",
   "bin": {
-    "npm-cli-wrapper-kiss": "bin/token_kiss.sh"
+    "npm-cli-wrapper-envaug": "bin/envaug.sh"
   },
   "scripts": { "test": "nodejs test/all.js" },
   "directories": { "test": "test" },

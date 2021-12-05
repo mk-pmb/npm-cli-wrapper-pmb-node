@@ -2,7 +2,7 @@
 # -*- coding: utf-8, tab-width: 2 -*-
 
 
-function token_kiss_cli_core () {
+function envaug_cli_core () {
   local DBGLV="${DEBUGLEVEL:-0}"
   [ "$DBGLV" -ge 8 ] && echo "D: $FUNCNAME invocation:$(
     printf ' ‹%s›' "$0" "$@")" >&2

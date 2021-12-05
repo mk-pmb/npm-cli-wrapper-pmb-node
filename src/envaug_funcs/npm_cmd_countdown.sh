@@ -3,7 +3,7 @@
 
 function npm_cmd_countdown () {
   local DURA_SEC=
-  let DURA_SEC="$(guess_npm_cfgvar token-kiss-countdown-dura-sec \
+  let DURA_SEC="$(guess_npm_cfgvar envaug-countdown-dura-sec \
     || echo 15)"
   [ "$DURA_SEC" == 0 ] && return 0
   [ "$DURA_SEC" -ge 1 ] || return 4$(echo "E: invalid countdown duration" >&2)
