@@ -42,6 +42,8 @@ function envaug_cli_core () {
     )
   eval "$(cfg_read_runmode_hook earliest)" || return $?
 
+  check_expectations || return $?
+
   local -A NPM_VARS=(
     [token]="$NPM_TOKEN"
     [email]="$NPM_EMAIL"
