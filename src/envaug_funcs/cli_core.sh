@@ -40,6 +40,7 @@ function envaug_cli_core () {
   local RC_FILES=(
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
     )
+  eval "$(cfg_read_runmode_hook earliest)" || return $?
 
   local -A NPM_VARS=(
     [token]="$NPM_TOKEN"
@@ -47,6 +48,8 @@ function envaug_cli_core () {
     )
   [ -n "$NPM_EMAIL" ] || NPM_VARS[email]="$(
     guess_npm_cfgvar email || echo 'nobody@example.net')"
+
+  eval "$(cfg_read_runmode_hook pre_token)" || return $?
   decide_token || return $?$(echo "E: Token selection failed" >&2)
 
   case "$RUNFLAGS" in

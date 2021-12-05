@@ -14,4 +14,11 @@ function guess_npm_cfgvar () {
 }
 
 
+function cfg_read_runmode_hook () {
+  local PHASE="$1"
+  [[ "$RUNFLAGS" == *+'unhooked'+* ]] \
+    || guess_npm_cfgvar "npm_envaug_hook:$PHASE:$RUNMODE"
+}
+
+
 return 0

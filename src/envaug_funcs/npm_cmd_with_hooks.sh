@@ -10,7 +10,7 @@ function npm_cmd_with_hooks () {
 
     [a-z]* )
       if [[ "$RUNFLAGS" != *+'unhooked'+* ]]; then
-        HOOK="$(guess_npm_cfgvar "npm_cmd_hook:$RUNMODE")"
+        HOOK="$(guess_npm_cfgvar "npm_envaug_hook:cmd:$RUNMODE")"
         [ "${HOOK:0:2}" == '~/' ] && HOOK="$HOME${HOOK:1}"
         [ -n "$HOOK" ] && NPM_CMD=( "$HOOK" )
       fi
