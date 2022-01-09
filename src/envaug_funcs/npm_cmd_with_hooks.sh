@@ -7,6 +7,7 @@ function npm_cmd_with_hooks () {
 
   case "$RUNMODE" in
     --version ) ;;
+    --versions ) ;;
 
     [a-z]* )
       if [[ "$RUNFLAGS" != *+'unhooked'+* ]]; then
