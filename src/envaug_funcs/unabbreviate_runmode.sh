@@ -6,6 +6,7 @@ function unabbreviate_runmode () {
     install
     login
     logout+token
+    owner+token
     publish+token
     run
     test
