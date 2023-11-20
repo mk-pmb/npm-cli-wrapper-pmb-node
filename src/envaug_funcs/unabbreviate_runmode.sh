@@ -3,6 +3,7 @@
 
 function unabbreviate_runmode () {
   local KNOWN_TASKS=(
+    deprecate+token
     install
     login
     logout+token
