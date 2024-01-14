@@ -7,11 +7,12 @@ function check_expectations () {
     expect_git_repo_clean
     expect_git_tracks_all_tarball_files
     )
+  local TRACE="D: npm-cli-wrapper-pmb envaug $FUNCNAME"
   local ITEM=
   for ITEM in "${KNOWN_EXPECTATIONS[@]}"; do
-    [ "$DBGLV" -le 2 ] || echo "D: $FUNCNAME ? $ITEM ?" >&2
+    [ "$DBGLV" -le 8 ] || echo "$TRACE ? $ITEM ?" >&2
     [[ "$RUNFLAGS" == *+"$ITEM"+* ]] || continue
-    [ "$DBGLV" -le 2 ] || echo "D: $FUNCNAME + $ITEM +" >&2
+    [ "$DBGLV" -le 2 ] || echo "$TRACE + $ITEM +" >&2
     "$ITEM" || return $?$(echo "E: failed to verify $ITEM" >&2)
   done
 }
