@@ -18,9 +18,10 @@ function envaug_cli_core () {
     done
   fi
 
+  local NPMWR_PROG='npm-cli-wrapper-pmb'
   [ -n "$REAL_NPM_BIN" ] || local REAL_NPM_BIN="$(guess_real_npm_bin)"
   [ -x "$REAL_NPM_BIN" ] || return 4$(
-    echo "E: not executable: $REAL_NPM_BIN" >&2)
+    echo E: $NPMWR_PROG: "not executable: $REAL_NPM_BIN" >&2)
 
   case "$#:$1" in
     1:--real-npm-bin )

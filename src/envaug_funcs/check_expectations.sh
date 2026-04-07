@@ -7,7 +7,7 @@ function check_expectations () {
     expect_git_repo_clean
     expect_git_tracks_all_tarball_files
     )
-  local TRACE="D: npm-cli-wrapper-pmb envaug $FUNCNAME"
+  local TRACE="D: $NPMWR_PROG envaug $FUNCNAME"
   local ITEM=
   for ITEM in "${KNOWN_EXPECTATIONS[@]}"; do
     [ "$DBGLV" -le 8 ] || echo "$TRACE ? $ITEM ?" >&2
