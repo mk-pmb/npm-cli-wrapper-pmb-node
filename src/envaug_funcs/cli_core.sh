@@ -3,6 +3,7 @@
 
 
 function envaug_cli_core () {
+  export LANG{,UAGE}=en_US.UTF-8  # make error messages search engine-friendly
   local DBGLV="${DEBUGLEVEL:-0}"
   [ "$DBGLV" -ge 8 ] && echo "D: $FUNCNAME invocation:$(
     printf ' ‹%s›' "$0" "$@")" >&2
@@ -37,6 +38,13 @@ function envaug_cli_core () {
   RUNMODE="${RUNFLAGS%%\+*}"
   RUNFLAGS="${RUNFLAGS#*\+}"
   RUNFLAGS="+${RUNFLAGS//\+/++}+"
+
+  case "$RUNMODE" in
+    download ) npm_cmd_download "$@" || return $?;;
+  esac
+
+  # Check RUNMODE 'exit' _after_ some of the above actions may have set it.
+  [ "$RUNMODE" != exit ] || return 0
 
   local RC_FILES=(
     "$HOME"/.config/nodejs/npm/rc*.{j,ce}son
