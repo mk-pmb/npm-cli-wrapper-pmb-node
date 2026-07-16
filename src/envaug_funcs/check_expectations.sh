@@ -2,7 +2,10 @@
 
 
 function check_expectations () {
+  local MANIF='package.json'
   local KNOWN_EXPECTATIONS=(
+    expect_git_repo_topdir
+    expect_manifest_basics
     expect_git_default_branch
     expect_git_repo_clean
     expect_git_tracks_all_tarball_files
@@ -17,6 +20,26 @@ function check_expectations () {
     [ "$DBGLV" -le 2 ] || echo "$TRACE + $ITEM +" >&2
     "$ITEM" || return $?$(echo "E: failed to verify $ITEM" >&2)
   done
+}
+
+
+function jq_manif () { <"$MANIF" jq --raw-output "$1"; }
+
+
+function expect_git_repo_topdir () {
+  local TOPDIR="$(git rev-parse --show-toplevel)"
+  [ . -ef "$TOPDIR" ] || return 4$(
+    echo E: 'Expected to run in the top level of your git repo.' >&2)
+}
+
+
+function expect_manifest_basics () {
+  local VAL="$(jq_manif .version)"
+  [[ "$VAL" == *[1-9]* ]] || return 4$(
+    echo E: 'Expected a non-zero digit in package version.' >&2)
+  VAL="$(jq_manif .private)"
+  [ "$VAL" == false ] || return 4$(
+    echo E: "Expected an explicit private:false in $MANIF" >&2)
 }
 
 
@@ -35,6 +58,7 @@ function expect_git_default_branch () {
   [ -n "$BRANCH" ] || return 3$(
     echo "E: failed to detect current branch name" >&2)
   local ACCEPT=
+  [ -n "$ACCEPT" ] || ACCEPT="$(jq_manif '.npm_publish_from_branch // ""')"
   [ -n "$ACCEPT" ] || ACCEPT="$GIT_DEFAULT_BRANCH_NAMES"
   [ -n "$ACCEPT" ] || ACCEPT="$(guess_npm_cfgvar git_default_branch_names)"
   [ -n "$ACCEPT" ] || ACCEPT='
