@@ -11,7 +11,9 @@ function check_expectations () {
   local ITEM=
   for ITEM in "${KNOWN_EXPECTATIONS[@]}"; do
     [ "$DBGLV" -le 8 ] || echo "$TRACE ? $ITEM ?" >&2
-    [[ "$RUNFLAGS" == *+"$ITEM"+* ]] || continue
+    [[ "$RUNFLAGS" == *+"$ITEM"+* ]] ||
+      [[ "$RUNFLAGS" == *+expect_all+* ]] ||
+      continue
     [ "$DBGLV" -le 2 ] || echo "$TRACE + $ITEM +" >&2
     "$ITEM" || return $?$(echo "E: failed to verify $ITEM" >&2)
   done
