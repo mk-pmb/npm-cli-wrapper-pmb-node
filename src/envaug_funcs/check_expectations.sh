@@ -32,7 +32,8 @@ function expect_git_default_branch () {
   local BRANCH="$(git branch | sed -nre 's~^\* (\S+)$~\1~p')"
   [ -n "$BRANCH" ] || return 3$(
     echo "E: failed to detect current branch name" >&2)
-  local ACCEPT="$GIT_DEFAULT_BRANCH_NAMES"
+  local ACCEPT=
+  [ -n "$ACCEPT" ] || ACCEPT="$GIT_DEFAULT_BRANCH_NAMES"
   [ -n "$ACCEPT" ] || ACCEPT="$(guess_npm_cfgvar git_default_branch_names)"
   [ -n "$ACCEPT" ] || ACCEPT='
     main
